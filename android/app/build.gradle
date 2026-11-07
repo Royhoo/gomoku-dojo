@@ -25,6 +25,11 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    compileOptions {
+        // Capacitor 8 的 Android 库以 Java 21 编译，主模块保持一致
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
+    }
     signingConfigs {
         if (hasKeystore) {
             release {

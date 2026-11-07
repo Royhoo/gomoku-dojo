@@ -21,11 +21,11 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: 准备 JDK 17
+      - name: 准备 JDK 21（Capacitor 8 的 Android 库要求 Java 21 编译）
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: 安装依赖
         run: npm ci

@@ -79,7 +79,7 @@ npx cap sync android
 cd android && ./gradlew assembleDebug
 ```
 
-前置条件：JDK 17 + Android SDK（`ANDROID_HOME` 指向 SDK 目录）。
+前置条件：JDK 21 + Android SDK（`ANDROID_HOME` 指向 SDK 目录）。
 
 ## 四、安装到手机
 
