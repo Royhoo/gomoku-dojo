@@ -1,8 +1,10 @@
+import { useSyncExternalStore } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button, Card, ProgressBar, Tag } from "../../components/ui";
+import { AccountBar } from "../../components/AccountBar";
 import { parseCoord } from "../../game/coords";
 import { OPENINGS } from "../../openings";
-import { isLessonDone, loadProgress, openingProgress } from "../../core/progress";
+import { getProgress, isLessonDone, openingProgress, subscribeProgress } from "../../core/progress";
 
 /**
  * 开局缩略图：把定式前三手画成小棋盘。
@@ -54,7 +56,8 @@ function MiniOpening({ moves }: { moves: string[] }) {
 
 export function HomePage() {
   const navigate = useNavigate();
-  const progress = loadProgress();
+  // 订阅而非读取：登录后云端进度合并进来时要立刻重画
+  const progress = useSyncExternalStore(subscribeProgress, getProgress);
 
   const continueTarget = (() => {
     if (!progress.last) return null;
@@ -86,6 +89,8 @@ export function HomePage() {
           </Button>
         </div>
       </header>
+
+      <AccountBar />
 
       <section>
         <div className="mb-3 flex items-baseline justify-between">
@@ -175,7 +180,7 @@ export function HomePage() {
 
       <footer className="mt-10 border-t border-[var(--color-line)] pt-5 text-[12px] leading-relaxed text-[var(--color-ink-faint)]">
         本课只讲「执黑」的必胜开局——无禁手规则下黑棋确有先手优势，白棋没有对应的必胜开局。
-        AI 为本地计算，不联网。
+        AI 为本地计算，不联网。学习进度默认只存在本机，登录后才会同步到云端。
       </footer>
     </div>
   );

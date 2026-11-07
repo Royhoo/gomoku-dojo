@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { LessonPlayer } from "../../lesson/LessonPlayer";
 import { getOpening } from "../../openings";
 import { markLessonDone, saveLast } from "../../core/progress";
+import { pushLessonCompleted, queueLastPosition } from "../../core/cloudProgress";
 import type { BoardThemeId } from "../../board/theme";
 
 const THEME: BoardThemeId = "wood";
@@ -22,7 +23,10 @@ export function LearnPage() {
   }, [opening, lesson, navigate]);
 
   useEffect(() => {
-    if (opening && lesson) saveLast(opening.id, lesson.id, stepNum);
+    if (!opening || !lesson) return;
+    saveLast(opening.id, lesson.id, stepNum);
+    // 登录状态下顺带把当前位置推上云端（防抖，未登录时为空操作）
+    queueLastPosition(opening.id, lesson.id, Math.max(0, stepNum));
   }, [opening, lesson, stepNum]);
 
   const prevLesson = useMemo(
@@ -46,6 +50,7 @@ export function LearnPage() {
 
   const complete = () => {
     markLessonDone(opening.id, lesson.id);
+    pushLessonCompleted(opening.id, lesson.id, lesson.moves.length);
     if (nextLesson) {
       navigate(`/learn/${opening.id}/${nextLesson.id}/-1`);
     } else {
