@@ -11,6 +11,9 @@
 import type { BoardState, Point, Role } from "../types";
 import { chooseMove, type Difficulty } from "./search";
 import type { AIRequest, AIResponse } from "./worker";
+// 内联 Worker：把 worker 打成 base64 塞进主包，不额外发请求。
+// 这样托管网关的鉴权 Cookie 缺失时，AI 也不会因为 worker 文件被拦而降级到主线程。
+import AIWorker from "./worker?worker&inline";
 
 let worker: Worker | null = null;
 let workerBroken = false;
@@ -21,7 +24,7 @@ function ensureWorker(): Worker | null {
   if (workerBroken) return null;
   if (worker) return worker;
   try {
-    worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+    worker = new AIWorker();
     worker.onmessage = (e: MessageEvent<AIResponse>) => {
       const cb = pending.get(e.data.id);
       if (cb) {

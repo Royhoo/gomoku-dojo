@@ -58,3 +58,6 @@ android/keystore.properties
 
 # 已发布应用的本地标记（WorkBuddy 内部文件）
 .wbapp_*.genie
+
+# 本地调试残留
+.tmp-*
