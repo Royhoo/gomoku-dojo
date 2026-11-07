@@ -28,21 +28,25 @@ Debug 包可以直接装、可以直接发给朋友。**不能上架应用商店
 
 安装时手机会提示「未知来源应用」，允许一次即可。
 
-## 二、准备正式签名（要上架或长期分发时才需要）
+## 二、正式签名（已完成）
 
 正式签名解决的是「App 能覆盖升级」：同一个包名 + 同一把密钥，才能覆盖安装。
 密钥丢了就再也无法更新已装出去的 App，所以**密钥文件必须自己保管**。
 
+> 本项目已经生成过一把密钥并配好了 Secrets，直接推代码就会自动出 `app-release.apk`。
+> 下面的流程只在你需要**换一把新密钥**时才要走一遍。
+
+### 口令为什么不走工作流输入
+
+仓库是 public，`workflow_dispatch` 的输入值会以明文出现在公开的 Actions 日志里。
+所以口令改从仓库 Secret `KS_PASSWORD` 读取，GitHub 会自动把日志里的值打码。
+
 ### 1. 生成密钥库
 
-在仓库的 `Actions` 页面，左侧选「生成签名密钥」→ `Run workflow`，填：
-
-| 输入 | 说明 |
-|---|---|
-| password | 密钥库口令，至少 6 位，**自己记牢** |
-| alias | 密钥别名，默认 `gomoku` |
-
-跑完在页面的 Artifacts 里下载 `release-keystore`，解压得到 `release.jks`。
+1. 先在 `Settings` → `Secrets and variables` → `Actions` 里加一个临时 Secret `KS_PASSWORD`（密钥口令）。
+2. `Actions` → 左侧「生成签名密钥」→ `Run workflow`，`alias` 填 `gomoku`。
+3. 跑完下载 Artifacts 里的 `release-keystore`，解压得到 `release.jks`。
+4. **立刻删掉 `KS_PASSWORD` 这个 Secret**。
 
 ⚠️ Artifacts 只保留 7 天，请尽快下载并备份到自己的网盘/密码管理器。
 
@@ -50,7 +54,7 @@ Debug 包可以直接装、可以直接发给朋友。**不能上架应用商店
 
 ```bash
 # macOS / Linux
-base64 -i release.jks | tr -d '\n' > keystore.b64
+base64 -w0 release.jks > keystore.b64
 
 # Windows PowerShell
 [Convert]::ToBase64String([IO.File]::ReadAllBytes("release.jks")) | Set-Content keystore.b64
@@ -63,11 +67,16 @@ base64 -i release.jks | tr -d '\n' > keystore.b64
 | 名称 | 值 |
 |---|---|
 | `KEYSTORE_BASE64` | 上一步得到的整行 Base64 文本 |
-| `KEYSTORE_PASSWORD` | 生成密钥时填的口令 |
-| `KEY_ALIAS` | 生成密钥时填的别名 |
+| `KEYSTORE_PASSWORD` | 生成密钥时用的口令 |
+| `KEY_ALIAS` | `gomoku` |
 | `KEY_PASSWORD` | 与 `KEYSTORE_PASSWORD` 相同 |
 
 配好后再推一次代码，Actions 会**同时产出** `app-debug.apk` 和 `app-release.apk`（已签名）。
+
+### 4. 当前这把密钥的指纹
+
+SHA1：`85:52:B8:4C:99:F6:0B:FA:29:2E:BC:45:D9:06:47:C1:88:EA:16:33`
+（上架应用商店时可能要求填写，用于证明后续版本出自同一把密钥）
 
 ## 三、本地构建（可选，不推荐）
 

@@ -7,6 +7,11 @@
 - 人机对战：三档难度，支持悔棋与一步提示
 - 纯前端、离线可用，可打包成安卓 APK
 
+## 在线访问
+
+- 网页版：<https://gomoku-dojo-67873.app.workbuddy.host/?sharecode=4DL72Y4TC6>
+- 安卓包：<https://github.com/Royhoo/gomoku-dojo/releases/tag/latest>（每次推代码自动更新）
+
 ## 快速开始
 
 ```bash
