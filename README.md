@@ -1,4 +1,4 @@
-# learn-something
+# gomoku-dojo
 
 五子棋必胜开局分步教学 + 人机对战。
 
