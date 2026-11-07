@@ -56,6 +56,16 @@ function sharecodeAssetLoader(): Plugin {
   };
 }
 
+/**
+ * 云服务数据面地址。
+ *
+ * 服务端按 Origin 精确匹配来源，只认应用发布域名。本地 dev server 的源是
+ * http://127.0.0.1:5173，直接跨域请求会被预检拦掉。这里用 dev server 反代
+ * `/.cloud/**` 到发布域名，并把 Origin / Referer 改成发布域名，
+ * 于是本地也能真正登录、真正读写数据库，而不用改服务端配置。
+ */
+const CLOUD_ORIGIN = "https://gomoku-dojo-67873.app.workbuddy.host";
+
 // mode === "app" 时产出相对路径，供 Capacitor 打包（file:// 协议）使用
 export default defineConfig(({ mode }) => ({
   base: mode === "app" ? "./" : "/",
@@ -63,6 +73,23 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+    },
+  },
+  server: {
+    host: "127.0.0.1",
+    port: 5173,
+    proxy: {
+      "/.cloud": {
+        target: CLOUD_ORIGIN,
+        changeOrigin: true,
+        secure: true,
+        configure(proxy) {
+          proxy.on("proxyReq", (req) => {
+            req.setHeader("Origin", CLOUD_ORIGIN);
+            req.setHeader("Referer", `${CLOUD_ORIGIN}/`);
+          });
+        },
+      },
     },
   },
   worker: { format: "es" },

@@ -16,11 +16,35 @@
 
 ```bash
 npm install
-npm run dev      # 打开 http://localhost:5173
+npm run dev      # 打开 http://127.0.0.1:5173
 npm test         # 39 项测试，覆盖规则、棋型、AI 与课程数据
 npm run build    # 产出 dist/（网页版）
 npm run build:app # 产出 dist/（App 用：相对路径 + Hash 路由）
 ```
+
+## 本地开发
+
+```bash
+npm run dev        # http://127.0.0.1:5173
+npm run dev:lan    # 同一局域网可访问，用手机打开终端里打印的 Network 地址
+```
+
+改代码即时热更新，不用重新构建。
+
+### 云服务在本地怎么连上的
+
+云服务的数据面在发布域名 `gomoku-dojo-67873.app.workbuddy.host` 上，而且**服务端按 Origin 精确匹配来源**——直接从 `http://127.0.0.1:5173` 跨域请求会被预检拦掉。
+
+处理办法在 `vite.config.ts` 的 `server.proxy`：把 `/.cloud/**` 反代到发布域名，并在转发时把 `Origin` / `Referer` 改写成发布域名。于是：
+
+- 浏览器侧：请求是同源的，不触发跨域
+- 服务端侧：看到的是合法来源
+
+`src/core/cloud.ts` 里 `resolveEndpoint()` 在 dev 下把 endpoint 指向当前源，生产构建仍用发布域名，逻辑一行不差。
+
+**一个已知限制**：登录回调地址是 `http://127.0.0.1:5173/`，如果 OAuth Relay 只白名单了发布域名，本地走完授权会回到空白页。界面、教学、对弈、本地进度都能在本地验证；**登录与云端同步建议在发布站点上验**。
+
+未登录时进度只写 localStorage，所以断网、离线、本地调试都能正常学。
 
 ## 目录结构
 
